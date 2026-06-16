@@ -1,2 +1,2 @@
 # App_Grupo1
-Aplicación de reservación de turnos
+Aplicación de gestión de alumnos
