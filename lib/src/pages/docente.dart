@@ -53,6 +53,14 @@ class PantallaDocente extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Panel de gestión de alumnos y cursos',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white70,
+                  ),
+                ),
                 const SizedBox(height: 40),
 
                 // Navigation Button 1: Inscribir Alumno
@@ -70,24 +78,18 @@ class PantallaDocente extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // Navigation Button 2: Ver Dashboard
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.dashboard),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.dashboard, color: Colors.white),
                   label: const Text(
                     'Ver Matrículas',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
-                    ),
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF0D47A1),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.white, width: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: () {
-                    // Navigating to the Dashboard
-                    Navigator.pushNamed(context, '/dashboard');
-                  },
+                  onPressed: () => Navigator.pushNamed(context, '/dashboard'),
                 ),
               ],
             ),

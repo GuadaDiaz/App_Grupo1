@@ -28,6 +28,7 @@ class _RegistrationViewState extends State<RegistrationView> {
   void dispose() {
     _nombreController.dispose();
     _dniController.dispose();
+    _cursoController.dispose();
     super.dispose();
   }
 
@@ -54,6 +55,7 @@ class _RegistrationViewState extends State<RegistrationView> {
         _dniController.text.isEmpty ||
         _cursoSeleccionado == null ||
         _fechaSeleccionada == null) {
+      ScaffoldMessenger.of(context).clearSnackBars();    
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Por favor, complete todos los campos obligatorios.'),
@@ -61,6 +63,28 @@ class _RegistrationViewState extends State<RegistrationView> {
       );
       return;
     }
+
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar Inscripción'),
+        content: Text('¿Desea inscribir a ${_nombreController.text}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Confirmar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true) return;
+
+    // Validación obligatoria de Flutter después de un 'await'
+    if (!mounted) return;
 
     final nuevoAlumno = Alumno(
       nombre: _nombreController.text,
@@ -86,6 +110,7 @@ class _RegistrationViewState extends State<RegistrationView> {
               controller: _nombreController,
               decoration: const InputDecoration(
                 labelText: 'Nombre Completo',
+                prefixIcon: Icon(Icons.person),
                 border: OutlineInputBorder(),
               ),
             ),
@@ -97,7 +122,31 @@ class _RegistrationViewState extends State<RegistrationView> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'DNI',
+                prefixIcon: Icon(Icons.badge),
                 border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // DatePicker
+            InkWell(
+              onTap: () => _seleccionarFecha(context),
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Fecha de Nacimiento',
+                  prefixIcon: Icon(Icons.calendar_today),
+                  border: OutlineInputBorder(),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _fechaSeleccionada == null
+                          ? 'Seleccione una fecha'
+                          : "${_fechaSeleccionada!.day}/${_fechaSeleccionada!.month}/${_fechaSeleccionada!.year}",
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -114,29 +163,6 @@ class _RegistrationViewState extends State<RegistrationView> {
                   _cursoSeleccionado = newValue;
                 });
               },
-            ),
-            const SizedBox(height: 20),
-
-            // DatePicker
-            InkWell(
-              onTap: () => _seleccionarFecha(context),
-              child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Fecha de Nacimiento',
-                  border: OutlineInputBorder(),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _fechaSeleccionada == null
-                          ? 'Seleccione una fecha'
-                          : "${_fechaSeleccionada!.day}/${_fechaSeleccionada!.month}/${_fechaSeleccionada!.year}",
-                    ),
-                    const Icon(Icons.calendar_today),
-                  ],
-                ),
-              ),
             ),
             const SizedBox(height: 40),
 
