@@ -14,6 +14,16 @@ class _FormularioLoginState extends State<FormularioLogin> {
   final TextEditingController _passwordController = TextEditingController();
   String? rolElegido;
 
+  bool _obscurePassword = true;
+
+  // Se ejecuta automáticamente antes de destruir la pantalla para liberar memoria.
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -21,6 +31,12 @@ class _FormularioLoginState extends State<FormularioLogin> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            CircleAvatar(
+              radius: 45,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              child: const Icon(Icons.school, size: 45, color: Colors.white),
+            ),
+            const SizedBox(height: 16),
             const Text(
               'Iniciar Sesión',
               style: TextStyle(
@@ -29,7 +45,7 @@ class _FormularioLoginState extends State<FormularioLogin> {
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: TextField(
@@ -42,20 +58,24 @@ class _FormularioLoginState extends State<FormularioLogin> {
                 ),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: TextField(
                 controller: _passwordController,
-                obscureText: true,
+                obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
                   prefixIcon: Icon(Icons.lock),
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  ),
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: DropdownButtonFormField<String>(
@@ -74,7 +94,7 @@ class _FormularioLoginState extends State<FormularioLogin> {
                 },
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 if (_emailController.text.trim().isEmpty ||
