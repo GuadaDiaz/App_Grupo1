@@ -25,6 +25,45 @@ class _FormularioLoginState extends State<FormularioLogin> {
     _passwordController.dispose();
     super.dispose();
   }
+  Future<void> _iniciarSesionConQR() async {
+    final String? qrData = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const QRLoginScanner(), 
+      ),
+    );
+
+    if (qrData != null) {
+      String datosLeidos = qrData.toLowerCase();
+
+      if (datosLeidos.contains('alumno')) {
+        
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const PantallaAlumno(),
+          ),
+        );
+        
+      } else if (datosLeidos.contains('docente')) {
+        
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const PantallaDocente(),
+          ),
+        );
+        
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error: Código QR no reconocido en el sistema.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
