@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:gestion_de_matriculas/src/pages/alumno.dart';
 import 'package:gestion_de_matriculas/src/pages/docente.dart';
+import 'package:gestion_de_matriculas/src/pages/qr_login_scanner.dart';
 
 class FormularioLogin extends StatefulWidget {
   const FormularioLogin({super.key});
@@ -25,6 +26,7 @@ class _FormularioLoginState extends State<FormularioLogin> {
     _passwordController.dispose();
     super.dispose();
   }
+  
   Future<void> _iniciarSesionConQR() async {
     final String? qrData = await Navigator.push(
       context,
@@ -33,17 +35,53 @@ class _FormularioLoginState extends State<FormularioLogin> {
       ),
     );
 
+    if (!mounted) return; 
+
     if (qrData != null) {
       String datosLeidos = qrData.toLowerCase();
 
       if (datosLeidos.contains('alumno')) {
-        
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const PantallaAlumno(),
-          ),
-        );
+        // 1. Mostramos que está cargando
+        setState(() => _isLoading = true);
+
+        try {
+          // 2. Buscamos un alumno real en Firebase (igual que el botón normal)
+          final snapshot = await FirebaseFirestore.instance
+              .collection('alumnos')
+              .limit(1)
+              .get();
+
+          if (!mounted) return;
+
+          // 3. Validamos si hay alumnos
+          if (snapshot.docs.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No hay alumnos registrados en la base de datos.'),
+              ),
+            );
+            return;
+          }
+
+          // 4. Navegamos a la pantalla pasándole el ID real
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PantallaAlumno(
+                alumnoId: snapshot.docs.first.id, // ID real de Firebase
+              ),
+            ),
+          );
+
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error de conexión: $e')),
+            );
+          }
+        } finally {
+          if (mounted) setState(() => _isLoading = false);
+        }
         
       } else if (datosLeidos.contains('docente')) {
         
@@ -92,7 +130,7 @@ class _FormularioLoginState extends State<FormularioLogin> {
               child: TextField(
                 keyboardType: TextInputType.emailAddress,
                 controller: _emailController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Email o Username',
                   prefixIcon: Icon(Icons.person),
                   border: OutlineInputBorder(),
@@ -107,12 +145,12 @@ class _FormularioLoginState extends State<FormularioLogin> {
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ),
@@ -135,7 +173,9 @@ class _FormularioLoginState extends State<FormularioLogin> {
                 },
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
+            
+            // --- BOTÓN NORMAL (CON CORREO Y CONTRASEÑA) ---
             ElevatedButton(
               onPressed: _isLoading
                   ? null
@@ -225,11 +265,28 @@ class _FormularioLoginState extends State<FormularioLogin> {
                       child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2),
                     )
-                  : const Text(
-                      'Acceder',
-                      style: TextStyle(fontSize: 18),
+                  : const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: Text(
+                        'Acceder',
+                        style: TextStyle(fontSize: 18),
+                      ),
                     ),
             ),
+            
+            const SizedBox(height: 15),
+
+            // --- BOTÓN QR QUE FALTABA EN TU CÓDIGO ---
+            OutlinedButton.icon(
+              onPressed: _iniciarSesionConQR, 
+              icon: const Icon(Icons.qr_code_scanner, size: 24),
+              label: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Text('Entrar con QR', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+            
+            const SizedBox(height: 20),
           ],
         ),
       ),
